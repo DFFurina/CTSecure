@@ -1,0 +1,7 @@
+aiohttp>=3.10.0
+PyYAML>=6.0
+prometheus_client>=0.20.0
+maxminddb>=2.0.0
+watchdog>=5.0.0
+PyQt6>=6.7.0; platform_system != "Darwin"
+textual>=0.70.0

@@ -1,0 +1,69 @@
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 依赖管理
+Pipfile.lock
+poetry.lock
+
+# 日志和临时文件
+logs/
+*.log
+access.log.*
+error.log.*
+
+# 黑名单和运行时生成文件
+blacklist.json
+
+# 证书目录（通常不提交真实证书）
+certs/*
+!certs/.gitkeep   # 如果想保留空目录，可以加个 .gitkeep
+
+# 编辑器和 IDE 文件
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# macOS 系统文件
+.DS_Store
+
+# Windows 系统文件
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# 其他可能生成的临时文件
+*.bak
+*.tmp
+*.temp
+
+# GeoIP 数据库（体积大，不提交）
+GeoLite2-*.mmdb
+
+# 打包或构建产物
+dist/
+build/
+*.egg-info/
+*.egg
+
+# 配置文件
+config.yaml
+waf_rules.yaml
+
+# 另加上传的文件
+examples/

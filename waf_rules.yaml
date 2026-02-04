@@ -1,0 +1,120 @@
+# waf_rules.yaml 示例
+# CTSecure WAF 规则文件
+# 规则优先级：priority 越小越先执行
+# action 可选值：block / log / monitor（monitor 只记录不阻断）
+# fields 可选：path, query_string, headers, args (GET+POST 参数), body, user_agent, cookies 等
+
+rules:
+  # ------------------- 高危规则（优先级最低数字，先匹配） -------------------
+  - id: 1001
+    name: "SQL Injection - 经典模式"
+    priority: 10
+    match:
+      type: regex
+      fields: [args, body, query_string]
+      pattern: "(?i)(union\\s+(all|select)|select\\s+.*\\s+from|or\\s+1=1|--|;|\\bexec\\b|\\bdrop\\s+(table|database)|\\bcast\\(|\\bconvert\\(|\\bchar\\(|\\bsubstring\\()"
+    action: block
+    log: true
+    msg: "疑似 SQL 注入尝试"
+
+  - id: 1002
+    name: "XSS - 反射型/存储型常见 payload"
+    priority: 15
+    match:
+      type: regex
+      fields: [query_string, args, body]
+      pattern: "(?i)(<script|onerror|onload|onmouseover|onfocus|onerror|javascript:|alert\\(|eval\\(|prompt\\(|document\\.cookie|\\bxss\\b)"
+    action: block
+    log: true
+    msg: "疑似 XSS 攻击"
+
+  - id: 1003
+    name: "路径穿越 / Directory Traversal"
+    priority: 5
+    match:
+      type: regex
+      fields: [path, args]
+      pattern: "(\\.\\./|\\.\\.%2f|%2e%2e%2f|\\.\\.%5c|%252e%252e|\\.\\./\\.\\./|\\.\\.%252f)"
+    action: block
+    log: true
+    msg: "路径穿越尝试"
+
+  - id: 1004
+    name: "命令注入常见模式"
+    priority: 12
+    match:
+      type: regex
+      fields: [args, body, query_string]
+      pattern: "(?i)(;cat\\s|/etc/passwd|whoami|uname\\s-a|;ls\\s|&&\\s|\\|\\||`|\\$\\(|\\bping\\s|\\bnslookup\\s|\\bcurl\\s|\\bwget\\s)"
+    action: block
+    log: true
+    msg: "疑似命令注入"
+
+  - id: 1005
+    name: "已知扫描器 / 恶意 User-Agent"
+    priority: 8
+    match:
+      type: regex
+      fields: [user_agent]
+      pattern: "(?i)(sqlmap|nikto|nessus|nmap|zgrab|masscan|havij|acunetix|burp|netsparker|scanner|exploit|metasploit|w3af|paros|dirbuster|gobuster|ffuf)"
+    action: block
+    log: true
+    msg: "已知扫描工具或恶意 UA"
+
+  # ------------------- 中危 / 补充规则 -------------------
+  - id: 2001
+    name: "敏感文件访问尝试"
+    priority: 30
+    match:
+      type: regex
+      fields: [path]
+      pattern: "(?i)(\\.env|\\.git/HEAD|\\.DS_Store|web\\.config|backup|\\.bak|\\.sql|\\.zip|\\.tar\\.gz|config\\.php)"
+    action: block
+    log: true
+    msg: "尝试访问敏感配置文件或备份文件"
+
+  - id: 2002
+    name: "webshell / 后门特征文件名"
+    priority: 25
+    match:
+      type: regex
+      fields: [path]
+      pattern: "(?i)(webshell|c99|r57|wso|locus7s|php-reverse-shell|shell\\.php|backdoor|cmd\\.asp|aspxshell)"
+    action: block
+    log: true
+    msg: "疑似 webshell 或后门文件访问"
+
+  - id: 2003
+    name: "异常长 URL 或参数"
+    priority: 35
+    match:
+      type: length
+      fields: [path, query_string]
+      min: 0
+      max: 2048                # URL + 参数总长度超过 2KB 视为可疑
+    action: block
+    log: true
+    msg: "异常超长 URL/参数（可能缓冲区溢出或扫描）"
+
+  # ------------------- 低危 / 仅记录规则（可用于观察） -------------------
+  - id: 9001
+    name: "监控常见爬虫但不阻断"
+    priority: 100
+    match:
+      type: regex
+      fields: [user_agent]
+      pattern: "(?i)(Googlebot|Bingbot|YandexBot|DuckDuckBot|Slurp|Exabot|AhrefsBot|SemrushBot|MJ12bot)"
+    action: monitor          # 只记录，不阻断
+    log: true
+    msg: "合法搜索引擎爬虫"
+
+  - id: 9999
+    name: "默认兜底 - 高风险路径关键词"
+    priority: 200
+    match:
+      type: regex
+      fields: [path]
+      pattern: "(?i)(admin|phpmyadmin|test|dev|staging|wp-admin|login|shell|manager|portal|dashboard)"
+    action: monitor
+    log: true
+    msg: "访问管理后台或测试路径（仅记录）"
