@@ -86,7 +86,6 @@ async def run_servers():
 
     http_port = CONFIG.get('listen', {}).get('http_port', 80)
 
-    # 检查端口
     if not check_port_available(http_port):
         logging.critical(f"端口 {http_port} 已被占用，无法启动！请检查并释放端口。")
         sys.exit(1)
@@ -113,22 +112,39 @@ async def run_servers():
         await https_site.start()
         logging.info(f"HTTPS 服务器运行于 https://0.0.0.0:{https_port}")
 
-    # 明确提示服务器已启动成功
-    logging.info("===== 服务器启动完成，已进入监听状态 =====")
-    logging.info("浏览器访问 http://127.0.0.1 或你的域名 进行测试")
-    logging.info("按 Ctrl+C 正常退出程序")
+    # ────────────────────────────────────────────────
+    #           新增：启动完成后的明显提示
+    # ────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print(" " * 15 + "CTSecure 代理服务器启动成功！")
+    print("=" * 60)
+    print(f"  HTTP 监听端口 : {http_port}")
+    if has_ssl:
+        print(f" HTTPS 监听端口 : {https_port}")
+    print(f"  当前时间      : {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"  监听地址      : http://0.0.0.0:{http_port}  (或你的域名)")
+    if has_ssl:
+        print(f"                : https://0.0.0.0:{https_port}")
+    print("-" * 60)
+    print("  • 现在可以用浏览器访问 http://127.0.0.1 或域名 测试")
+    print("  • 运行 'python main.py tui' 可查看实时监控面板")
+    print("  • 按 Ctrl+C 正常退出程序")
+    print("=" * 60 + "\n")
 
-    # 无限等待，保持服务器运行
+    # 无限等待 + 可选心跳（可选启用）
     try:
-        await asyncio.Event().wait()
+        while True:
+            await asyncio.sleep(3600)  # 每1小时打印一次心跳（可改为60秒或注释掉）
+            print(f"[心跳] 服务器仍在运行 | {time.strftime('%Y-%m-%d %H:%M:%S')}")
     except KeyboardInterrupt:
-        logging.info("收到 Ctrl+C，启动优雅关闭...")
+        print("\n" + "-" * 60)
+        print("收到 Ctrl+C，正在优雅关闭...")
         try:
             await cleanup()
             await runner.cleanup()
-            logging.info("清理完成，程序正常退出")
+            print("清理完成，程序已正常退出")
         except Exception as e:
-            logging.error(f"关闭时发生异常: {e}")
+            print(f"关闭时发生异常: {e}")
         raise
 
 if __name__ == "__main__":
