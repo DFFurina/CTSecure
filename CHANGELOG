@@ -1,2 +1,34 @@
-V1.0.0 First release
-- first release.
+# CTSecure Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [v1.0.1] - 2026-02-05
+
+**Stability & usability patch**
+
+- Fixed watchdog false-positive restarts causing port binding conflicts on Windows
+- Fixed Ctrl+C shutdown error (`RuntimeError: no current event loop`)
+- Added clear startup success banner with ports, time, and usage instructions
+- Improved watchdog reliability with real `/metrics` health check
+- Added pre-bind port availability check
+
+Recommended upgrade for all Windows users.
+
+## [v1.0.0] - 2026-01-xx (Initial Release)
+
+**First public release**
+
+- Core reverse proxy functionality with multi-domain support
+- SSL/TLS support with automatic certificate loading
+- WAF (Web Application Firewall) with basic rule set
+- Rate limiting & IP banning with real firewall integration
+- Cloudflare compatibility (header trust & IP filtering)
+- GeoIP blocking (optional)
+- Blacklist persistence & auto-cleanup
+- GUI configuration editor (PyQt6)
+- TUI real-time monitoring panel
+- Prometheus metrics endpoint (`/metrics`)
+- Logging with JSON format & daily rotation
+- Windows-compatible startup & graceful shutdown
+
+Initial version focused on security, ease of use, and cross-platform stability.
