@@ -443,6 +443,11 @@ async def proxy_handler(request: web.Request):
 
 async def cleanup():
     global _session_pool
-    if _session_pool and not _session_pool.closed:
+    if _session_pool is None or _session_pool.closed:
+        error_logger.info("连接池已关闭或不存在，无需清理")
+        return
+    try:
         await _session_pool.close()
         error_logger.info("全局 HTTP 连接池已关闭")
+    except Exception as e:
+        error_logger.error(f"关闭连接池时发生异常: {e}")
